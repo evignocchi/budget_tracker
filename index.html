@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard — Budget Tracker</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>Budget Tracker</h1>
+  <nav>
+    <span class="muted" id="user-email"></span>
+    <button class="secondary" id="logout-btn">Esci</button>
+    <button class="danger" id="delete-account-btn">Elimina account</button>
+  </nav>
+</header>
+
+<main class="container">
+
+  <p class="error-message" id="global-error"></p>
+
+  <section id="alerts-section">
+    <h2 class="section-title">Alert</h2>
+    <ul class="alerts-list" id="alerts-list"></ul>
+    <p class="muted" id="no-alerts" style="display:none;">Nessun alert al momento. Buon lavoro!</p>
+    <p class="muted" style="margin-top:8px; font-size: 0.78rem;">Gli alert sono calcoli automatici basati sui tuoi dati storici, non consulenza finanziaria professionale.</p>
+  </section>
+
+  <section>
+    <h2 class="section-title">Riepilogo</h2>
+    <div class="filters card">
+      <div class="field">
+        <label for="filter-period">Periodo</label>
+        <select id="filter-period">
+          <option value="current_quarter">Trimestre corrente</option>
+          <option value="previous_quarter">Trimestre precedente</option>
+          <option value="current_half">Semestre corrente</option>
+          <option value="previous_half">Semestre precedente</option>
+          <option value="current_year" selected>Anno corrente</option>
+          <option value="previous_year">Anno precedente</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-category">Categoria</label>
+        <select id="filter-category"><option value="">Tutte</option></select>
+      </div>
+      <div class="field">
+        <label for="filter-account">Conto</label>
+        <select id="filter-account"><option value="">Tutti</option></select>
+      </div>
+      <div class="field checkbox-field">
+        <input type="checkbox" id="filter-compare" />
+        <label for="filter-compare">Confronta con periodo precedente</label>
+      </div>
+    </div>
+
+    <div class="summary-cards">
+      <div class="card summary-card">
+        <div class="label">Saldo attuale</div>
+        <div class="value" id="card-balance">—</div>
+      </div>
+      <div class="card summary-card">
+        <div class="label">Entrate nel periodo</div>
+        <div class="value income" id="card-income">—</div>
+        <div class="delta" id="card-income-delta"></div>
+      </div>
+      <div class="card summary-card">
+        <div class="label">Uscite nel periodo</div>
+        <div class="value expense" id="card-expense">—</div>
+        <div class="delta" id="card-expense-delta"></div>
+      </div>
+      <div class="card summary-card">
+        <div class="label">Netto nel periodo</div>
+        <div class="value" id="card-net">—</div>
+        <div class="delta" id="card-net-delta"></div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card chart-card">
+        <h2>Spese per categoria</h2>
+        <canvas id="chart-category"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h2>Andamento nel tempo</h2>
+        <canvas id="chart-months"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Nuova transazione</h2>
+    <form class="tx-form card" id="tx-form">
+      <div class="field">
+        <label for="tx-date">Data (GG-MM-AAAA)</label>
+        <input type="text" id="tx-date" placeholder="GG-MM-AAAA" required />
+      </div>
+      <div class="field">
+        <label for="tx-amount">Importo (€)</label>
+        <input type="number" step="0.01" min="0.01" id="tx-amount" required />
+      </div>
+      <div class="field">
+        <label for="tx-type">Tipo</label>
+        <select id="tx-type">
+          <option value="expense">Uscita</option>
+          <option value="income">Entrata</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tx-category">Categoria</label>
+        <select id="tx-category" required></select>
+      </div>
+      <div class="field">
+        <label for="tx-account">Conto</label>
+        <select id="tx-account" required></select>
+      </div>
+      <div class="field checkbox-field">
+        <input type="checkbox" id="tx-recurring" />
+        <label for="tx-recurring">Ricorrente</label>
+      </div>
+      <div class="field" id="tx-frequency-field" style="display:none;">
+        <label for="tx-frequency">Frequenza</label>
+        <select id="tx-frequency">
+          <option value="settimanale">Settimanale</option>
+          <option value="mensile" selected>Mensile</option>
+          <option value="annuale">Annuale</option>
+        </select>
+      </div>
+      <div class="field full-width">
+        <label for="tx-description">Descrizione (opzionale)</label>
+        <input type="text" id="tx-description" maxlength="200" />
+      </div>
+      <div class="field">
+        <button type="submit" id="tx-submit-btn">Aggiungi</button>
+      </div>
+      <div class="field" id="tx-cancel-edit-field" style="display:none;">
+        <button type="button" class="secondary" id="tx-cancel-edit-btn">Annulla modifica</button>
+      </div>
+    </form>
+    <p class="error-message" id="tx-error"></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Categoria</th>
+          <th>Conto</th>
+          <th>Descrizione</th>
+          <th>Importo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tx-table-body"></tbody>
+    </table>
+    <p class="muted" id="tx-empty" style="display:none;">Nessuna transazione per i filtri selezionati.</p>
+  </section>
+
+  <section>
+    <h2 class="section-title">Conti e categorie</h2>
+    <div class="manage-grid">
+      <div class="card">
+        <h3 style="margin-top:0;">Conti</h3>
+        <div class="tag-list" id="accounts-tag-list"></div>
+        <form class="inline-form" id="add-account-form">
+          <input type="text" id="new-account-name" placeholder="Nome nuovo conto" maxlength="80" required />
+          <button type="submit">Aggiungi</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">Categorie</h3>
+        <div class="tag-list" id="categories-tag-list"></div>
+        <form class="inline-form" id="add-category-form">
+          <input type="text" id="new-category-name" placeholder="Nome nuova categoria" maxlength="80" required />
+          <select id="new-category-type">
+            <option value="expense">Uscita</option>
+            <option value="income">Entrata</option>
+          </select>
+          <button type="submit">Aggiungi</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop hidden" id="delete-account-modal">
+  <div class="card modal">
+    <h3 style="margin-top:0;">Elimina account</h3>
+    <p class="muted">Questa azione è irreversibile e cancellerà tutti i tuoi dati (conti, categorie, transazioni). Inserisci la password per confermare.</p>
+    <div class="field">
+      <label for="delete-account-password">Password</label>
+      <input type="password" id="delete-account-password" />
+    </div>
+    <p class="error-message" id="delete-account-error"></p>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="secondary" id="delete-account-cancel">Annulla</button>
+      <button class="danger" id="delete-account-confirm">Elimina definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
